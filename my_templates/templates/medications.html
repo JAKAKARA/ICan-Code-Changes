@@ -1,0 +1,144 @@
+<!--
+Handoff note for `my_templates/templates/medications.html`.
+This template is part of the documented source-only project copy.
+Read the surrounding blocks to understand what this page renders and how it fits into the feature flow.
+-->
+{% extends 'base.html' %}
+
+{% comment %}<!-- {% extends 'base_for_iframe.html' %} this used to be the extends until i found how to use javascript to 
+clear the navbar if the page is in an iframe-->
+{% endcomment %}
+
+{% load staticfiles %}
+{% load customfilters %}
+
+<!--{% load staticfiles %} -->
+{% block content %}
+{# hint: dont leave spaces in your template code when using filters #}
+
+
+<!-- Start Styles. Move the 'style' tags and everything between them to between the 'head' tags -->
+<style type="text/css">
+.myTable { width:100%;background-color:#eee;border-collapse:collapse; }
+.myTable th { background-color:#000;color:white;width:50%; }
+.myTable td, .myTable th { padding:5px;border:1px solid #000; }
+</style>
+<!-- End Styles -->
+<style>
+
+#menu ul{
+  list-style: none;
+}
+#menu li{
+  display: inline;
+}
+
+</style>
+
+<table class="myTable">
+   <tr>
+        <th>Prescription(s)
+		</th>
+        <th><a href="/smcproject/admin/my_templates/medication_templates/?clinicians_name__id__exact={{ request.user.id }}"> Add or Edit Templates</a>
+        </th>
+
+        <br>
+
+<div id="menu">
+        {% with 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' as list %}
+
+                <ul>
+                {% for alphabet in list %}
+
+                <li><a href="/smcproject/my_templates/medication_alphabet_pagination/{{ request.user.id }}/{{ alphabet }}/">{{ alphabet }}</a></li>  |
+
+                {% endfor %}
+                </ul>
+        {% endwith %}
+</div>
+
+    </tr>
+
+    {% for x in context1 %}
+    {% if x.medications_bridge2_set.all.count > 0 %}
+
+    <tr>
+        <td>
+                <font color="#2e86c1"><b>{{ x.title }}</font></b>  - <b>{{x.age_group}}</b> <br> ---------- <br>
+        {% for y in x.medications_bridge2_set.all %}
+
+        <b> {{ y.medication_name_id.medication_name }}, {{ y.dosage }} x {{ y.duration }}</b> <sub>[{{y.prescribed_by}}]</sub> <br>
+      
+        {% endfor %}
+        </td>
+
+
+        <td>
+                {% for y in x.medications_bridge2_set.all %}
+                {% if forloop.first %}
+
+                <script>
+                        function url_params(item, prescription_set_id){
+                            
+                        var full_url = parent.window.document.URL; // Get current url
+                        var url_array = full_url.split('/'); // Split the string into an array with / as separator
+                        var needed_segment = url_array[7];  // Get the part of the array that is needed note that smcproject is indexed as [3]
+                        // item.href='/smcproject/searchapp/copy_medication_template/'+prescription_set_id+'/'+needed_segment; // this line gives us the href value for the line
+                        // return true;
+
+        var link=`/smcproject/searchapp/copy_medication_template/${prescription_set_id}/${needed_segment}`;
+                        //return true;
+        $.ajax({
+        type: "GET",
+        url: link,
+
+        success: function(response) {
+            alert(response.message);
+        },
+        error: function(result) {
+            alert('error');
+        } });
+
+
+
+                        }
+                </script>
+
+
+ 
+                <br>
+
+        <div id='copy_template'>
+                <a onclick="event.preventDefault(), url_params(this, {{x.id}})" href="" > Copy Template </a>
+                <!-- here x.id refers to the prescription_set_id -->
+                <!-- here needed_segment gives us the specific current_consultation_id of the parent window -->
+        </div>
+                {% endif %}
+                {% endfor %}
+        </td>
+   </tr>
+
+   <script type="text/javascript">
+        var full_url = parent.window.document.URL; 
+        var url_array = full_url.split('/');
+
+        if(url_array.indexOf('my_templates')>0)document.getElementById('copy_template').style.display = "none";
+   </script>
+
+
+
+
+
+   {% else %} 
+   {% endif %}
+
+    {% endfor %}
+
+</table>
+
+
+
+
+{% endblock %}
+<br>
+
